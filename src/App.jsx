@@ -11,6 +11,7 @@ export default function App() {
 
   const ranks = ["1st", "2nd", "3rd", "4th", "5th"];
 
+  // 숫자 입력 (소수점 포함 허용)
   const handleInput = (value, list, index, setter) => {
     if (/^[0-9]*\.?[0-9]*$/.test(value)) {
       const updated = [...list];
@@ -19,29 +20,26 @@ export default function App() {
     }
   };
 
-  // winner time
+  // winner time (그냥 최소값)
   const validTimes = finishTimes
     .map(Number)
-    .filter((t) => t > 0)
-    .sort((a, b) => a - b);
+    .filter((t) => t > 0);
 
-  const winnerTime = validTimes[0] || 0;
+  const winnerTime = validTimes.length ? Math.min(...validTimes) : 0;
 
-  // ❗ RP는 반올림 안 하고 raw 유지
-  const racePointsRaw = finishTimes.map((t) => {
+  // ❗ RAW RP (반올림 없음)
+  const racePoints = finishTimes.map((t) => {
     if (!t || !winnerTime) return 0;
     return (Number(t) / winnerTime - 1) * F_VALUE;
   });
 
-  // ❗ FIS-like: SUM 먼저
-  const sumRaceRaw = racePointsRaw.reduce((a, b) => a + b, 0);
-
+  // sums (그대로)
   const sumStart = startPoints.reduce((a, b) => a + Number(b || 0), 0);
   const sumFinish = finishPoints.reduce((a, b) => a + Number(b || 0), 0);
+  const sumRace = racePoints.reduce((a, b) => a + b, 0);
 
-  // ❗ 마지막에만 rounding
-  const penaltyRaw = (sumStart + sumFinish - sumRaceRaw) / 10;
-  const penalty = Math.round(penaltyRaw * 100) / 100;
+  // ❗ RAW penalty (반올림 없음)
+  const penalty = (sumStart + sumFinish - sumRace) / 10;
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
@@ -85,6 +83,7 @@ export default function App() {
 
       {finishPoints.map((p, i) => (
         <div key={i} style={{ marginBottom: 15 }}>
+
           <div style={{ fontWeight: "bold" }}>{ranks[i]}</div>
 
           <input
@@ -108,14 +107,14 @@ export default function App() {
           />
 
           <div style={{ marginLeft: 10, marginTop: 5 }}>
-            RP: {racePointsRaw[i] ? racePointsRaw[i].toFixed(2) : "0.00"}
+            RP: {racePoints[i]}
           </div>
         </div>
       ))}
 
       {/* RESULT */}
       <h2 style={{ marginTop: 30 }}>Result</h2>
-      <p>Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}</p>
+      <p>Penalty: {penalty}</p>
 
     </div>
   );
