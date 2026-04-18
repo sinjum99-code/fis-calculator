@@ -80,168 +80,80 @@ export default function App() {
   }, [penaltyRaw, myRacePointRaw]);
 
   return (
-    <div
-      style={{
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-        maxWidth: 760,
-        margin: "0 auto",
-        lineHeight: 1.5,
-      }}
-    >
+    <div style={{ padding: 20, fontFamily: "Arial, sans-serif", maxWidth: 760, margin: "0 auto" }}>
+
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <h1 style={{ marginBottom: 6 }}>FIS Penalty Calculator</h1>
+        <h1>FIS Penalty Calculator</h1>
         <div style={{ color: "#666", fontSize: 14 }}>by SHIN Jeongwoo</div>
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <button
-          onClick={() => setDiscipline("GS")}
-          style={{
-            marginRight: 8,
-            padding: "8px 14px",
-            cursor: "pointer",
-            fontWeight: discipline === "GS" ? "bold" : "normal",
-          }}
-        >
-          GS
-        </button>
-        <button
-          onClick={() => setDiscipline("SL")}
-          style={{
-            padding: "8px 14px",
-            cursor: "pointer",
-            fontWeight: discipline === "SL" ? "bold" : "normal",
-          }}
-        >
-          SL
-        </button>
+        <button onClick={() => setDiscipline("GS")}>GS</button>
+        <button onClick={() => setDiscipline("SL")} style={{ marginLeft: 10 }}>SL</button>
 
         <div style={{ marginTop: 10 }}>
           <strong>F Value:</strong> {F_VALUE}
         </div>
-        <div style={{ marginTop: 4 }}>
+        <div>
           <strong>Winner Time:</strong> {winnerTime > 0 ? format2(winnerTime) : "-"}
         </div>
       </div>
 
       <h2>Start List Top 5</h2>
       {startPoints.map((value, i) => (
-        <div key={`start-${i}`} style={{ marginBottom: 8 }}>
-          <span style={{ display: "inline-block", width: 48 }}>{ranks[i]}:</span>
+        <div key={i}>
+          {ranks[i]}:
           <input
-            type="text"
-            inputMode="decimal"
             value={value}
-            onChange={(e) =>
-              handleInput(e.target.value, startPoints, i, setStartPoints)
-            }
-            placeholder="FIS Points"
-            style={{
-              width: 140,
-              padding: "6px 8px",
-              border: "1px solid #ccc",
-              borderRadius: 4,
-            }}
+            onChange={(e) => handleInput(e.target.value, startPoints, i, setStartPoints)}
+            style={{ marginLeft: 10 }}
           />
         </div>
       ))}
 
       <h2 style={{ marginTop: 24 }}>Finish List Top 5</h2>
       {finishPoints.map((value, i) => (
-        <div key={`finish-${i}`} style={{ marginBottom: 12 }}>
-          <div style={{ fontWeight: "bold", marginBottom: 6 }}>{ranks[i]}</div>
+        <div key={i} style={{ marginBottom: 10 }}>
+          <div style={{ fontWeight: "bold" }}>{ranks[i]}</div>
 
-          <div style={{ marginBottom: 6 }}>
-            <label style={{ display: "inline-block", width: 90 }}>FIS Points</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={value}
-              onChange={(e) =>
-                handleInput(e.target.value, finishPoints, i, setFinishPoints)
-              }
-              placeholder="FIS Points"
-              style={{
-                width: 140,
-                padding: "6px 8px",
-                border: "1px solid #ccc",
-                borderRadius: 4,
-              }}
-            />
+          <input
+            value={value}
+            onChange={(e) => handleInput(e.target.value, finishPoints, i, setFinishPoints)}
+            placeholder="FIS Points"
+            style={{ marginRight: 10 }}
+          />
+
+          <input
+            value={finishTimes[i]}
+            onChange={(e) => handleInput(e.target.value, finishTimes, i, setFinishTimes)}
+            placeholder="Time"
+          />
+
+          <div style={{ marginTop: 4 }}>
+            Race Points : {format2(racePointsRaw[i])}
           </div>
-
-          <div style={{ marginBottom: 4 }}>
-            <label style={{ display: "inline-block", width: 90 }}>Time</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={finishTimes[i]}
-              onChange={(e) =>
-                handleInput(e.target.value, finishTimes, i, setFinishTimes)
-              }
-              placeholder="Time"
-              style={{
-                width: 140,
-                padding: "6px 8px",
-                border: "1px solid #ccc",
-                borderRadius: 4,
-              }}
-            />
-          </div>
-
-          <div style={{ color: "#333" }}>{format2(racePointsRaw[i])}</div>
         </div>
       ))}
 
-      <div
-        style={{
-          marginTop: 28,
-          padding: 20,
-          borderRadius: 12,
-          border: "2px solid #222",
-          background: "#f5f5f5",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
-          Penalty
-        </div>
-        <div style={{ fontSize: 32, fontWeight: "bold" }}>
+      <div style={{ marginTop: 30, padding: 20, border: "2px solid black", textAlign: "center" }}>
+        <div>Penalty</div>
+        <div style={{ fontSize: 28, fontWeight: "bold" }}>
           {format2(penaltyRaw)}
         </div>
       </div>
 
-      <div
-        style={{
-          marginTop: 18,
-          padding: 20,
-          borderRadius: 12,
-          border: "1px solid #ccc",
-          background: "#fafafa",
-        }}
-      >
-        <div style={{ fontSize: 20, fontWeight: "bold", marginBottom: 12 }}>
+      <div style={{ marginTop: 20, padding: 20, border: "1px solid gray" }}>
+        <div style={{ fontWeight: "bold", marginBottom: 10 }}>
           My fis points
         </div>
 
-        <div style={{ marginBottom: 10 }}>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={myTime}
-            onChange={(e) => handleSingleInput(e.target.value, setMyTime)}
-            placeholder="My Time"
-            style={{
-              width: 180,
-              padding: "8px 10px",
-              border: "1px solid #ccc",
-              borderRadius: 4,
-            }}
-          />
-        </div>
+        <input
+          value={myTime}
+          onChange={(e) => handleSingleInput(e.target.value, setMyTime)}
+          placeholder="My Time"
+        />
 
-        <div style={{ fontSize: 24, fontWeight: "bold" }}>
+        <div style={{ marginTop: 10, fontSize: 20 }}>
           {format2(myFisPointsRaw)}
         </div>
       </div>
