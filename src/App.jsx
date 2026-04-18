@@ -8,6 +8,7 @@ export default function App() {
   const [startPoints, setStartPoints] = useState(["", "", "", "", ""]);
   const [finishPoints, setFinishPoints] = useState(["", "", "", "", ""]);
   const [finishTimes, setFinishTimes] = useState(["", "", "", "", ""]);
+  const [myTime, setMyTime] = useState("");
 
   const ranks = ["1st", "2nd", "3rd", "4th", "5th"];
 
@@ -16,6 +17,12 @@ export default function App() {
       const updated = [...list];
       updated[index] = value;
       setter(updated);
+    }
+  };
+
+  const handleSingleInput = (value, setter) => {
+    if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+      setter(value);
     }
   };
 
@@ -38,7 +45,6 @@ export default function App() {
 
   const winnerTime = validTimesSorted.length > 0 ? validTimesSorted[0] : 0;
 
-  // RAW RP 계산: 내부 계산에서는 반올림 없음
   const racePointsRaw = useMemo(() => {
     return finishTimes.map((time) => {
       const t = toNumber(time);
@@ -59,10 +65,15 @@ export default function App() {
     return racePointsRaw.reduce((sum, v) => sum + v, 0);
   }, [racePointsRaw]);
 
-  // 내부 계산은 raw 그대로
   const penaltyRaw = useMemo(() => {
     return (sumStartRaw + sumFinishRaw - sumRaceRaw) / 10;
   }, [sumStartRaw, sumFinishRaw, sumRaceRaw]);
+
+  const myRacePointRaw = useMemo(() => {
+    const t = toNumber(myTime);
+    if (t <= 0 || winnerTime <= 0) return 0;
+    return ((t / winnerTime) - 1) * F_VALUE;
+  }, [myTime, winnerTime, F_VALUE]);
 
   return (
     <div
@@ -190,12 +201,56 @@ export default function App() {
         </div>
       ))}
 
-      <h2 style={{ marginTop: 24 }}>Result</h2>
-      <div><strong>Start Sum:</strong> {format2(sumStartRaw)}</div>
-      <div><strong>Finish Sum:</strong> {format2(sumFinishRaw)}</div>
-      <div><strong>Race Point Sum:</strong> {format2(sumRaceRaw)}</div>
-      <div style={{ marginTop: 10, fontSize: 22, fontWeight: "bold" }}>
-        Penalty: {format2(penaltyRaw)}
+      <div
+        style={{
+          marginTop: 28,
+          padding: 20,
+          borderRadius: 12,
+          border: "2px solid #222",
+          background: "#f5f5f5",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+          Penalty
+        </div>
+        <div style={{ fontSize: 32, fontWeight: "bold" }}>
+          {format2(penaltyRaw)}
+        </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: 18,
+          padding: 20,
+          borderRadius: 12,
+          border: "1px solid #ccc",
+          background: "#fafafa",
+        }}
+      >
+        <div style={{ fontSize: 20, fontWeight: "bold", marginBottom: 12 }}>
+          My race point
+        </div>
+
+        <div style={{ marginBottom: 10 }}>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={myTime}
+            onChange={(e) => handleSingleInput(e.target.value, setMyTime)}
+            placeholder="My Time"
+            style={{
+              width: 180,
+              padding: "8px 10px",
+              border: "1px solid #ccc",
+              borderRadius: 4,
+            }}
+          />
+        </div>
+
+        <div style={{ fontSize: 18 }}>
+          RP: <strong>{format2(myRacePointRaw)}</strong>
+        </div>
       </div>
     </div>
   );
