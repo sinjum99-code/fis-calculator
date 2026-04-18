@@ -75,6 +75,10 @@ export default function App() {
     return ((t / winnerTime) - 1) * F_VALUE;
   }, [myTime, winnerTime, F_VALUE]);
 
+  const myFisPointsRaw = useMemo(() => {
+    return penaltyRaw + myRacePointRaw;
+  }, [penaltyRaw, myRacePointRaw]);
+
   return (
     <div
       style={{
@@ -145,19 +149,10 @@ export default function App() {
 
       <h2 style={{ marginTop: 24 }}>Finish List Top 5</h2>
       {finishPoints.map((value, i) => (
-        <div
-          key={`finish-${i}`}
-          style={{
-            marginBottom: 14,
-            padding: 10,
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            background: "#fafafa",
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: 8 }}>{ranks[i]}</div>
+        <div key={`finish-${i}`} style={{ marginBottom: 12 }}>
+          <div style={{ fontWeight: "bold", marginBottom: 6 }}>{ranks[i]}</div>
 
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 6 }}>
             <label style={{ display: "inline-block", width: 90 }}>FIS Points</label>
             <input
               type="text"
@@ -176,7 +171,7 @@ export default function App() {
             />
           </div>
 
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 4 }}>
             <label style={{ display: "inline-block", width: 90 }}>Time</label>
             <input
               type="text"
@@ -195,9 +190,7 @@ export default function App() {
             />
           </div>
 
-          <div style={{ color: "#333" }}>
-            RP: {format2(racePointsRaw[i])}
-          </div>
+          <div style={{ color: "#333" }}>{format2(racePointsRaw[i])}</div>
         </div>
       ))}
 
@@ -229,7 +222,7 @@ export default function App() {
         }}
       >
         <div style={{ fontSize: 20, fontWeight: "bold", marginBottom: 12 }}>
-          My race point
+          My fis points
         </div>
 
         <div style={{ marginBottom: 10 }}>
@@ -248,8 +241,8 @@ export default function App() {
           />
         </div>
 
-        <div style={{ fontSize: 18 }}>
-          RP: <strong>{format2(myRacePointRaw)}</strong>
+        <div style={{ fontSize: 24, fontWeight: "bold" }}>
+          {format2(myFisPointsRaw)}
         </div>
       </div>
     </div>
