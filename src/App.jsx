@@ -20,26 +20,46 @@ export default function App() {
     }
   };
 
-  // valid times
-  const validTimes = finishTimes
-    .map(Number)
-    .filter((t) => t > 0)
-    .sort((a, b) => a - b);
+  // -----------------------------
+  // 1️⃣ VALID FINISH + SORT (FIS 핵심)
+  // -----------------------------
+  const validFinish = finishTimes
+    .map((t, i) => ({
+      time: Number(t),
+      index: i,
+    }))
+    .filter((x) => x.time > 0)
+    .sort((a, b) => a.time - b.time)
+    .slice(0, 5);
 
-  const winnerTime = validTimes[0] || 0;
+  const winnerTime = validFinish[0]?.time || 0;
 
-  // ⭐ FIS-style RP (per athlete)
-  const racePoints = finishTimes.map((t) => {
-    if (!t || !winnerTime) return 0;
-    return (Number(t) / winnerTime - 1) * F_VALUE;
+  // -----------------------------
+  // 2️⃣ RP (FIS-style: per athlete + rounding 2 decimals)
+  // -----------------------------
+  const racePoints = validFinish.map((x) => {
+    const raw = (x.time / winnerTime - 1) * F_VALUE;
+    return Math.round(raw * 100) / 100; // ⭐ 핵심 안정화
   });
 
-  // sums
-  const sumStart = startPoints.reduce((a, b) => a + Number(b || 0), 0);
-  const sumFinish = finishPoints.reduce((a, b) => a + Number(b || 0), 0);
   const sumRace = racePoints.reduce((a, b) => a + b, 0);
 
-  // penalty (FIS-style final rounding)
+  // -----------------------------
+  // 3️⃣ START / FINISH SUM
+  // -----------------------------
+  const sumStart = startPoints.reduce(
+    (a, b) => a + Number(b || 0),
+    0
+  );
+
+  const sumFinish = finishPoints.reduce(
+    (a, b) => a + Number(b || 0),
+    0
+  );
+
+  // -----------------------------
+  // 4️⃣ PENALTY (FINAL STABLE FORMULA)
+  // -----------------------------
   const penaltyRaw = (sumStart + sumFinish - sumRace) / 10;
   const penalty = Math.round(penaltyRaw * 100) / 100;
 
@@ -69,7 +89,6 @@ export default function App() {
         <div key={i}>
           {ranks[i]}:
           <input
-            type="text"
             value={p}
             onChange={(e) =>
               handleInput(e.target.value, startPoints, i, setStartPoints)
@@ -86,10 +105,11 @@ export default function App() {
       {finishPoints.map((p, i) => (
         <div key={i} style={{ marginBottom: 15 }}>
 
-          <div style={{ fontWeight: "bold" }}>{ranks[i]}</div>
+          <div style={{ fontWeight: "bold" }}>
+            {ranks[i]}
+          </div>
 
           <input
-            type="text"
             value={p}
             onChange={(e) =>
               handleInput(e.target.value, finishPoints, i, setFinishPoints)
@@ -99,7 +119,6 @@ export default function App() {
           />
 
           <input
-            type="text"
             value={finishTimes[i]}
             onChange={(e) =>
               handleInput(e.target.value, finishTimes, i, setFinishTimes)
@@ -109,7 +128,7 @@ export default function App() {
           />
 
           <div style={{ marginLeft: 10, marginTop: 5 }}>
-            RP: {racePoints[i].toFixed(2)}
+            RP: {racePoints[i]?.toFixed(2) || "0.00"}
           </div>
         </div>
       ))}
@@ -117,7 +136,7 @@ export default function App() {
       {/* RESULT */}
       <h2 style={{ marginTop: 30 }}>Result</h2>
       <p style={{ fontSize: 20 }}>
-        Penalty: {penalty.toFixed(2)}
+        Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}
       </p>
 
     </div>
