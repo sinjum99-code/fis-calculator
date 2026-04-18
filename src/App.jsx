@@ -3,205 +3,96 @@ import { useState } from "react";
 export default function App() {
   const [discipline, setDiscipline] = useState("GS");
 
-  // START: FIS points only
-  const [start, setStart] = useState(Array(5).fill(0));
+  const F_VALUE = discipline === "GS" ? 1010 : 730;
 
-  // FINISH: name / time / fis
-  const [finish, setFinish] = useState(
-    Array(5).fill().map(() => ({
-      name: "",
-      time: 0,
-      fis: 0,
-    }))
-  );
+  const [startPoints, setStartPoints] = useState(Array(5).fill(""));
+  const [finishPoints, setFinishPoints] = useState(Array(5).fill(""));
+  const [finishTimes, setFinishTimes] = useState(Array(5).fill(""));
 
-  const F = discipline === "GS" ? 1010 : 730;
-
-  const ranks = [1, 2, 3, 4, 5];
-
-  // winner time
-  const winnerTime = Math.min(
-    ...finish.map((f) => Number(f.time) || Infinity)
-  );
-
-  // Race Points (FIS formula)
-  const calcRacePoints = (time) => {
-    if (!time || !winnerTime || winnerTime === Infinity) return 0;
-    return ((Number(time) / winnerTime) - 1) * F;
+  const handleTextNumber = (value, setter, index) => {
+    if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+      const updated = [...setter];
+      updated[index] = value;
+      return updated;
+    }
+    return setter;
   };
 
-  // START update
-  const updateStart = (i, value) => {
-    const arr = [...start];
-    arr[i] = Number(value);
-    setStart(arr);
-  };
+  const updateStart = (i, val) =>
+    setStartPoints(handleTextNumber(val, startPoints, i));
 
-  // FINISH update
-  const updateFinish = (i, field, value) => {
-    const arr = [...finish];
+  const updateFinishPoint = (i, val) =>
+    setFinishPoints(handleTextNumber(val, finishPoints, i));
 
-    arr[i][field] =
-      field === "name" ? value : Number(value);
+  const updateFinishTime = (i, val) =>
+    setFinishTimes(handleTextNumber(val, finishTimes, i));
 
-    setFinish(arr);
-  };
+  const times = finishTimes.map(Number).filter((t) => t > 0);
+  const winnerTime = Math.min(...times);
 
-  // sums
-  const sumStart = start.reduce((a, b) => a + Number(b || 0), 0);
-  const sumFinish = finish.reduce((a, b) => a + Number(b.fis || 0), 0);
+  const racePoints = finishTimes.map((t) => {
+    if (!t || !winnerTime) return 0;
+    return ((Number(t) / winnerTime - 1) * F_VALUE);
+  });
 
-  const sumRacePoints = finish.reduce(
-    (a, b) => a + calcRacePoints(b.time),
-    0
-  );
+  const sumStart = startPoints.reduce((a, b) => a + Number(b || 0), 0);
+  const sumFinish = finishPoints.reduce((a, b) => a + Number(b || 0), 0);
+  const sumRace = racePoints.reduce((a, b) => a + b, 0);
 
-  // PENALTY (your structure)
-  const penalty =
-    (sumStart + sumFinish - sumRacePoints) / 10;
+  const penalty = ((sumStart + sumFinish - sumRace) / 10);
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1>🎿 FIS Penalty Calculator</h1>
+    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
+      <h1>FIS Penalty Calculator</h1>
 
-      {/* DISCIPLINE */}
-      <h3>Discipline</h3>
-      <select
-        value={discipline}
-        onChange={(e) => setDiscipline(e.target.value)}
-      >
-        <option value="GS">GS</option>
-        <option value="SL">SL</option>
-      </select>
+      {/* GS / SL 선택 */}
+      <div>
+        <button onClick={() => setDiscipline("GS")}>GS</button>
+        <button onClick={() => setDiscipline("SL")}>SL</button>
+        <p>F Value: {F_VALUE}</p>
+      </div>
 
-      <hr />
-
-      {/* START */}
-      <h2>Start List (Rank 1–5)</h2>
-
-      {ranks.map((r, i) => (
-        <div key={i} style={{ marginBottom: 8 }}>
-          <span style={{ marginRight: 10 }}>
-            🏁 Rank {r}
-          </span>
-
+      {/* Start List */}
+      <h2>Start List Top 5 (FIS Points)</h2>
+      {startPoints.map((p, i) => (
+        <div key={i}>
+          {i + 1}위:
           <input
             type="text"
-            inputMode="decimal"
+            value={p}
+            onChange={(e) => updateStart(i, e.target.value)}
             placeholder="FIS Points"
-            value={start[i]}
-            onChange={(e) =>
-              updateStart(i, e.target.value)
-            }
-            style={{ width: 140 }}
           />
         </div>
       ))}
 
-      <hr />
-
-      {/* FINISH */}
-      <h2>Finish List (Rank 1–5)</h2>
-
-      {finish.map((a, i) => (
-        <div
-          key={i}
-          style={{
-            marginBottom: 14,
-            padding: 10,
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            backgroundColor: "#fafafa",
-          }}
-        >
-          {/* Rank */}
-          <div style={{ fontWeight: "bold", marginBottom: 8 }}>
-            🏁 Rank {ranks[i]}
-          </div>
-
-          {/* Name */}
-          <div style={{ marginBottom: 6 }}>
-            <label style={{ marginRight: 8 }}>👤 Name</label>
-            <input
-              type="text"
-              value={a.name}
-              onChange={(e) =>
-                updateFinish(i, "name", e.target.value)
-              }
-              style={{ width: 140 }}
-            />
-          </div>
-
-          {/* TIME */}
-          <div style={{ marginBottom: 6 }}>
-            <label
-              style={{
-                marginRight: 8,
-                color: "blue",
-                fontWeight: "bold",
-              }}
-            >
-              ⏱ TIME (sec)
-            </label>
-
-            <input
-              type="text"
-              inputMode="decimal"
-              value={a.time}
-              onChange={(e) =>
-                updateFinish(i, "time", e.target.value)
-              }
-              style={{
-                width: 120,
-                border: "2px solid blue",
-              }}
-            />
-          </div>
-
-          {/* FIS POINTS */}
-          <div style={{ marginBottom: 6 }}>
-            <label
-              style={{
-                marginRight: 8,
-                color: "green",
-                fontWeight: "bold",
-              }}
-            >
-              📊 FIS POINTS
-            </label>
-
-            <input
-              type="text"
-              inputMode="decimal"
-              value={a.fis}
-              onChange={(e) =>
-                updateFinish(i, "fis", e.target.value)
-              }
-              style={{
-                width: 120,
-                border: "2px solid green",
-              }}
-            />
-          </div>
-
-          {/* RACE POINTS */}
-          <div style={{ fontWeight: "bold" }}>
-            🏁 Race Points:{" "}
-            {calcRacePoints(a.time).toFixed(2)}
-          </div>
+      {/* Finish List */}
+      <h2>Finish List Top 5</h2>
+      {finishPoints.map((p, i) => (
+        <div key={i}>
+          {i + 1}위:
+          <input
+            type="text"
+            value={p}
+            onChange={(e) => updateFinishPoint(i, e.target.value)}
+            placeholder="FIS Points"
+          />
+          <input
+            type="text"
+            value={finishTimes[i]}
+            onChange={(e) => updateFinishTime(i, e.target.value)}
+            placeholder="Time (sec)"
+          />
+          <span>
+            {" "}
+            → Race Point: {racePoints[i]?.toFixed(2)}
+          </span>
         </div>
       ))}
 
-      <hr />
-
-      {/* RESULT */}
-      <h2>📊 Results</h2>
-
-      <p>Start Sum: {sumStart.toFixed(2)}</p>
-      <p>Finish Sum: {sumFinish.toFixed(2)}</p>
-      <p>Race Points Sum: {sumRacePoints.toFixed(2)}</p>
-
-      <h2>🎯 Penalty: {penalty.toFixed(2)}</h2>
+      {/* 결과 */}
+      <h2>Result</h2>
+      <p>Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}</p>
     </div>
   );
 }
