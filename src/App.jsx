@@ -43,7 +43,12 @@ export default function App() {
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h1>FIS Penalty Calculator</h1>
+      style={{ textAlign: "center", marginBottom: 20 }}>
+  <h1>FIS Penalty Calculator</h1>
+  <p style={{ marginTop: -10, color: "gray" }}>
+    by SHIN Jeongwoo
+  </p>
+</div>
 
       {/* GS / SL 선택 */}
       <div>
