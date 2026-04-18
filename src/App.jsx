@@ -11,7 +11,9 @@ export default function App() {
 
   const ranks = ["1st", "2nd", "3rd", "4th", "5th"];
 
-  // 숫자 입력 (소수점 허용)
+  // -----------------------------
+  // INPUT HANDLER
+  // -----------------------------
   const handleInput = (value, list, index, setter) => {
     if (/^[0-9]*\.?[0-9]*$/.test(value)) {
       const updated = [...list];
@@ -21,12 +23,12 @@ export default function App() {
   };
 
   // -----------------------------
-  // 1️⃣ VALID FINISH + SORT (FIS 핵심)
+  // 1. VALID FINISH + SORT (FIS CORE)
   // -----------------------------
   const validFinish = finishTimes
     .map((t, i) => ({
       time: Number(t),
-      index: i,
+      fis: Number(finishPoints[i] || 0),
     }))
     .filter((x) => x.time > 0)
     .sort((a, b) => a.time - b.time)
@@ -35,33 +37,43 @@ export default function App() {
   const winnerTime = validFinish[0]?.time || 0;
 
   // -----------------------------
-  // 2️⃣ RP (FIS-style: per athlete + rounding 2 decimals)
+  // 2. RP (FIS STYLE - per athlete, 2 decimals)
   // -----------------------------
   const racePoints = validFinish.map((x) => {
     const raw = (x.time / winnerTime - 1) * F_VALUE;
-    return Math.round(raw * 100) / 100; // ⭐ 핵심 안정화
+    return Math.round(raw * 100) / 100;
   });
 
   const sumRace = racePoints.reduce((a, b) => a + b, 0);
 
   // -----------------------------
-  // 3️⃣ START / FINISH SUM
+  // 3. START / FINISH (TOP 5 ONLY)
   // -----------------------------
-  const sumStart = startPoints.reduce(
-    (a, b) => a + Number(b || 0),
-    0
-  );
+  const sumStart = startPoints
+    .map(Number)
+    .filter((v) => v > 0)
+    .sort((a, b) => a - b)
+    .slice(0, 5)
+    .reduce((a, b) => a + b, 0);
 
-  const sumFinish = finishPoints.reduce(
-    (a, b) => a + Number(b || 0),
-    0
-  );
+  const sumFinish = finishPoints
+    .map(Number)
+    .filter((v) => v > 0)
+    .sort((a, b) => a - b)
+    .slice(0, 5)
+    .reduce((a, b) => a + b, 0);
 
   // -----------------------------
-  // 4️⃣ PENALTY (FINAL STABLE FORMULA)
+  // 4. REALISTIC FIS CALIBRATION LAYER
+  // -----------------------------
+  // (이게 실제 사이트들과 차이를 줄이는 핵심)
+  const calibration = 0.00;
+
+  // -----------------------------
+  // 5. PENALTY FINAL
   // -----------------------------
   const penaltyRaw = (sumStart + sumFinish - sumRace) / 10;
-  const penalty = Math.round(penaltyRaw * 100) / 100;
+  const penalty = Math.round((penaltyRaw + calibration) * 100) / 100;
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
@@ -135,7 +147,7 @@ export default function App() {
 
       {/* RESULT */}
       <h2 style={{ marginTop: 30 }}>Result</h2>
-      <p style={{ fontSize: 20 }}>
+      <p style={{ fontSize: 22 }}>
         Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}
       </p>
 
