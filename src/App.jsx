@@ -11,7 +11,7 @@ export default function App() {
 
   const ranks = ["1st", "2nd", "3rd", "4th", "5th"];
 
-  // 숫자 입력 (소수점 포함 허용)
+  // 숫자 입력 (소수점 허용)
   const handleInput = (value, list, index, setter) => {
     if (/^[0-9]*\.?[0-9]*$/.test(value)) {
       const updated = [...list];
@@ -20,26 +20,28 @@ export default function App() {
     }
   };
 
-  // winner time (그냥 최소값)
+  // valid times
   const validTimes = finishTimes
     .map(Number)
-    .filter((t) => t > 0);
+    .filter((t) => t > 0)
+    .sort((a, b) => a - b);
 
-  const winnerTime = validTimes.length ? Math.min(...validTimes) : 0;
+  const winnerTime = validTimes[0] || 0;
 
-  // ❗ RAW RP (반올림 없음)
+  // ⭐ FIS-style RP (per athlete)
   const racePoints = finishTimes.map((t) => {
     if (!t || !winnerTime) return 0;
     return (Number(t) / winnerTime - 1) * F_VALUE;
   });
 
-  // sums (그대로)
+  // sums
   const sumStart = startPoints.reduce((a, b) => a + Number(b || 0), 0);
   const sumFinish = finishPoints.reduce((a, b) => a + Number(b || 0), 0);
   const sumRace = racePoints.reduce((a, b) => a + b, 0);
 
-  // ❗ RAW penalty (반올림 없음)
-  const penalty = (sumStart + sumFinish - sumRace) / 10;
+  // penalty (FIS-style final rounding)
+  const penaltyRaw = (sumStart + sumFinish - sumRace) / 10;
+  const penalty = Math.round(penaltyRaw * 100) / 100;
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
@@ -107,14 +109,16 @@ export default function App() {
           />
 
           <div style={{ marginLeft: 10, marginTop: 5 }}>
-            RP: {racePoints[i]}
+            RP: {racePoints[i].toFixed(2)}
           </div>
         </div>
       ))}
 
       {/* RESULT */}
       <h2 style={{ marginTop: 30 }}>Result</h2>
-      <p>Penalty: {penalty}</p>
+      <p style={{ fontSize: 20 }}>
+        Penalty: {penalty.toFixed(2)}
+      </p>
 
     </div>
   );
