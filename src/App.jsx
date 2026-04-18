@@ -11,6 +11,7 @@ export default function App() {
 
   const ranks = ["1st", "2nd", "3rd", "4th", "5th"];
 
+  // 숫자 + 소수점 입력 허용
   const handleInput = (value, list, index, setter) => {
     if (/^[0-9]*\.?[0-9]*$/.test(value)) {
       const updated = [...list];
@@ -19,12 +20,23 @@ export default function App() {
     }
   };
 
-  const times = finishTimes.map(Number).filter((t) => t > 0);
-  const winnerTime = times.length ? Math.min(...times) : 0;
+  // winner time
+  const validTimes = finishTimes
+    .map(Number)
+    .filter((t) => t > 0);
 
+  const winnerTime = validTimes.length
+    ? Math.min(...validTimes)
+    : 0;
+
+  // ⭐ FIS 방식: RP 개별 반올림 후 합산
   const racePoints = finishTimes.map((t) => {
     if (!t || !winnerTime) return 0;
-    return (Number(t) / winnerTime - 1) * F_VALUE;
+
+    const raw = (Number(t) / winnerTime - 1) * F_VALUE;
+
+    // ⭐ 핵심 수정: FIS rounding (2 decimal)
+    return Math.round(raw * 100) / 100;
   });
 
   const sumStart = startPoints.reduce((a, b) => a + Number(b || 0), 0);
@@ -38,14 +50,14 @@ export default function App() {
 
       {/* TITLE */}
       <div style={{ textAlign: "center", marginBottom: 30 }}>
-        <h1 style={{ marginBottom: 5 }}>FIS Penalty Calculator</h1>
+        <h1>FIS Penalty Calculator</h1>
         <p style={{ fontSize: 14, color: "#888" }}>
           by SHIN Jeongwoo
         </p>
       </div>
 
       {/* DISCIPLINE */}
-      <div style={{ marginBottom: 20 }}>
+      <div>
         <button onClick={() => setDiscipline("GS")}>GS</button>
         <button onClick={() => setDiscipline("SL")} style={{ marginLeft: 10 }}>
           SL
@@ -54,9 +66,9 @@ export default function App() {
       </div>
 
       {/* START */}
-      <h2>Start List Top 5 (FIS Points)</h2>
+      <h2>Start List Top 5</h2>
       {startPoints.map((p, i) => (
-        <div key={i} style={{ marginBottom: 5 }}>
+        <div key={i}>
           {ranks[i]}:
           <input
             type="text"
@@ -76,12 +88,10 @@ export default function App() {
       {finishPoints.map((p, i) => (
         <div key={i} style={{ marginBottom: 15 }}>
 
-          {/* Rank */}
           <div style={{ fontWeight: "bold" }}>
             {ranks[i]}
           </div>
 
-          {/* FIS POINTS */}
           <input
             type="text"
             value={p}
@@ -92,18 +102,16 @@ export default function App() {
             style={{ marginLeft: 10, width: 120 }}
           />
 
-          {/* TIME */}
           <input
             type="text"
             value={finishTimes[i]}
             onChange={(e) =>
               handleInput(e.target.value, finishTimes, i, setFinishTimes)
             }
-            placeholder="Time (sec)"
+            placeholder="Time"
             style={{ marginLeft: 10, width: 120 }}
           />
 
-          {/* RP 아래줄 */}
           <div style={{ marginLeft: 10, marginTop: 5 }}>
             RP: {racePoints[i]?.toFixed(2)}
           </div>
@@ -112,7 +120,9 @@ export default function App() {
 
       {/* RESULT */}
       <h2 style={{ marginTop: 30 }}>Result</h2>
-      <p>Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}</p>
+      <p>
+        Penalty: {isFinite(penalty) ? penalty.toFixed(2) : "-"}
+      </p>
 
     </div>
   );
